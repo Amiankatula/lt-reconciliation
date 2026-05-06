@@ -8,224 +8,340 @@
   </head>
   <body>
 
-    <!-- HEADER -->
-    <header>
-      <div class="header-left">
-        <div class="logo">LT<span>—</span>Reconciliation</div>
-        <div class="tagline">Transaction Matching Platform</div>
-      </div>
-      <div class="header-right">
-        <div class="audit-pill" id="audit-pill">No reconciliation run yet</div>
-      </div>
-    </header>
-
-    <!-- TAB NAV -->
-    <nav class="tab-nav">
-      <button class="tab-btn active" onclick="showTab('dashboard')">📊 Dashboard</button>
-      <button class="tab-btn" onclick="showTab('records')">📂 Records</button>
-      <button class="tab-btn" onclick="showTab('results')">🔍 Results</button>
-      <button class="tab-btn" onclick="showTab('history')">🕐 History</button>
-      <button class="tab-btn" onclick="showTab('audit')">📋 Audit Trail</button>
-    </nav>
-
     <!-- ══════════════════════════════ -->
-    <!-- TAB 1: DASHBOARD               -->
+    <!-- LANDING PAGE                   -->
     <!-- ══════════════════════════════ -->
-    <div id="tab-dashboard" class="tab-content active">
+    <div id="landing-page">
+      <nav class="landing-nav">
+        <div class="landing-logo">LT<span>—</span>Reconciliation</div>
+        <button class="landing-launch-btn" onclick="launchApp()">Launch Platform →</button>
+      </nav>
 
-      <div class="tab-header">
-        <div class="tab-title">Dashboard</div>
-        <div class="tab-subtitle">Upload your records, set tolerance and run reconciliation</div>
-      </div>
+      <section class="hero">
+        <div class="hero-badge">🤖 AI-Powered · Fintech Grade · Built for East Africa</div>
+        <h1 class="hero-title">Transaction Reconciliation<br/>Made Simple</h1>
+        <p class="hero-sub">LT-Reconciliation compares M-Pesa mobile records against core banking records — automatically flagging mismatches, missing transactions, and unreconciled amounts. Powered by Claude AI.</p>
+        <div class="hero-btns">
+          <button class="btn-primary" onclick="launchApp()">Get Started Free →</button>
+          <button class="btn-secondary" onclick="scrollToFeatures()">See Features ↓</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="hero-stat-num">3</div><div class="hero-stat-lbl">AI Features</div></div>
+          <div class="hero-stat"><div class="hero-stat-num">CSV</div><div class="hero-stat-lbl">Upload Support</div></div>
+          <div class="hero-stat"><div class="hero-stat-num">∞</div><div class="hero-stat-lbl">Run History</div></div>
+          <div class="hero-stat"><div class="hero-stat-num">KES</div><div class="hero-stat-lbl">Local Currency</div></div>
+        </div>
+      </section>
 
-      <!-- UPLOAD + SETTINGS -->
-      <div class="settings-bar">
-        <div class="upload-group">
-          <label class="upload-label">
-            📱 Mobile / M-Pesa Records
-            <input type="file" id="mobile-upload" accept=".csv" onchange="handleUpload('mobile', this)" />
-            <span class="upload-hint" id="mobile-hint">Using sample data</span>
-          </label>
-        </div>
-        <div class="upload-group">
-          <label class="upload-label">
-            🏦 Core Banking Records
-            <input type="file" id="bank-upload" accept=".csv" onchange="handleUpload('bank', this)" />
-            <span class="upload-hint" id="bank-hint">Using sample data</span>
-          </label>
-        </div>
-        <div class="tolerance-group">
-          <label class="tolerance-label">
-            Tolerance (KES)
-            <input type="number" id="tolerance" value="0" min="0" />
-          </label>
-          <div class="tolerance-hint">Differences within this amount are treated as matched</div>
-        </div>
-        <button id="reconcile-btn" onclick="runReconciliation()">▶ Run Reconciliation</button>
-      </div>
-
-      <!-- STATUS -->
-      <div class="status-bar">
-        <span id="status-text">Upload CSV files or use sample data — then click Run Reconciliation</span>
-      </div>
-
-      <!-- SUMMARY CARDS -->
-      <div class="summary">
-        <div class="summary-card" onclick="showTab('results')" style="cursor:pointer">
-          <div class="card-number" id="total-count">0</div>
-          <div class="card-label">Total Transactions</div>
-        </div>
-        <div class="summary-card matched" onclick="filterAndGo('matched')" style="cursor:pointer">
-          <div class="card-number" id="matched-count">0</div>
-          <div class="card-label">Matched</div>
-        </div>
-        <div class="summary-card tolerance-card" onclick="filterAndGo('tolerance')" style="cursor:pointer">
-          <div class="card-number" id="tolerance-count">0</div>
-          <div class="card-label">Within Tolerance</div>
-        </div>
-        <div class="summary-card mismatch" onclick="filterAndGo('mismatch')" style="cursor:pointer">
-          <div class="card-number" id="mismatch-count">0</div>
-          <div class="card-label">Mismatches</div>
-        </div>
-        <div class="summary-card missing" onclick="filterAndGo('missing')" style="cursor:pointer">
-          <div class="card-number" id="missing-count">0</div>
-          <div class="card-label">Missing</div>
-        </div>
-        <div class="summary-card unreconciled">
-          <div class="card-number" id="unreconciled-amount">KES 0</div>
-          <div class="card-label">Unreconciled Amount</div>
-        </div>
-      </div>
-
-      <!-- QUICK ACTIONS -->
-      <div class="quick-actions">
-        <div class="qa-card" onclick="showTab('records')">
-          <div class="qa-icon">📂</div>
-          <div class="qa-label">View Records</div>
-        </div>
-        <div class="qa-card" onclick="showTab('results')">
-          <div class="qa-icon">🔍</div>
-          <div class="qa-label">View Results</div>
-        </div>
-        <div class="qa-card" onclick="exportCSV()">
-          <div class="qa-icon">⬇</div>
-          <div class="qa-label">Export CSV</div>
-        </div>
-        <div class="qa-card" onclick="showTab('history')">
-          <div class="qa-icon">🕐</div>
-          <div class="qa-label">View History</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ══════════════════════════════ -->
-    <!-- TAB 2: RECORDS                 -->
-    <!-- ══════════════════════════════ -->
-    <div id="tab-records" class="tab-content">
-
-      <div class="tab-header">
-        <div class="tab-title">Records</div>
-        <div class="tab-subtitle">Raw transaction data from both systems</div>
-      </div>
-
-      <div class="panels">
-        <div class="panel">
-          <div class="panel-title">📱 Mobile App Records</div>
-          <div class="panel-subtitle">What the M-Pesa system recorded</div>
-          <table>
-            <thead>
-              <tr><th>Transaction ID</th><th>Amount (KES)</th><th>Date</th><th>Status</th></tr>
-            </thead>
-            <tbody id="mobile-table"></tbody>
-          </table>
-        </div>
-        <div class="panel">
-          <div class="panel-title">🏦 Core Banking Records</div>
-          <div class="panel-subtitle">What the bank's core system recorded</div>
-          <table>
-            <thead>
-              <tr><th>Transaction ID</th><th>Amount (KES)</th><th>Date</th><th>Status</th></tr>
-            </thead>
-            <tbody id="bank-table"></tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ══════════════════════════════ -->
-    <!-- TAB 3: RESULTS                 -->
-    <!-- ══════════════════════════════ -->
-    <div id="tab-results" class="tab-content">
-
-      <div class="tab-header">
-        <div class="tab-title">Results</div>
-        <div class="tab-subtitle">Reconciliation output — filter and export</div>
-      </div>
-
-      <div class="results-section">
-        <div class="results-header">
-          <div class="filter-buttons">
-            <button class="filter-btn active" id="btn-all"       onclick="filterResults('all')">All</button>
-            <button class="filter-btn matched-btn" id="btn-matched"   onclick="filterResults('matched')">✅ Matched</button>
-            <button class="filter-btn tolerance-btn" id="btn-tolerance" onclick="filterResults('tolerance')">〰 Tolerance</button>
-            <button class="filter-btn mismatch-btn" id="btn-mismatch"  onclick="filterResults('mismatch')">⚠️ Mismatches</button>
-            <button class="filter-btn missing-btn"  id="btn-missing"   onclick="filterResults('missing')">❌ Missing</button>
-            <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+      <section class="features" id="features">
+        <div class="features-label">What LT-Reconciliation Does</div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🔄</div>
+            <div class="feature-title">Automatic Matching</div>
+            <div class="feature-desc">Upload two CSV files — one from your mobile system, one from the bank — and the platform instantly compares every transaction.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚠️</div>
+            <div class="feature-title">Error Categorisation</div>
+            <div class="feature-desc">Every problem is categorised — Amount Mismatch, Missing Transaction, Timing Issue, or Possible Duplicate — so your team knows exactly what to investigate.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">〰</div>
+            <div class="feature-title">Tolerance Matching</div>
+            <div class="feature-desc">Set a KES tolerance threshold. Small acceptable differences are flagged separately so your team can focus on real problems.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <div class="feature-title">Claude AI Analysis</div>
+            <div class="feature-desc">After every reconciliation, Claude reads your results and gives a plain English explanation of what went wrong and what to do next.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔧</div>
+            <div class="feature-title">AI Fix Suggestions</div>
+            <div class="feature-desc">Claude generates a specific, actionable fix for every mismatch and missing transaction — so your operations team moves fast.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">💬</div>
+            <div class="feature-title">Ask Claude Anything</div>
+            <div class="feature-desc">Chat directly with Claude about your reconciliation results. Ask why something went wrong, what patterns exist, or what to escalate.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🕐</div>
+            <div class="feature-title">Full Run History</div>
+            <div class="feature-desc">Every reconciliation run is saved with a full snapshot. Click any past run to reload the exact results — your complete audit trail.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⬇</div>
+            <div class="feature-title">CSV Export</div>
+            <div class="feature-desc">Export your reconciliation results to a clean CSV file — ready to share with your manager, auditor, or banking partner.</div>
           </div>
         </div>
-        <div id="filter-status"></div>
-        <table>
-          <thead>
-            <tr>
-              <th>Transaction ID</th>
-              <th>Mobile Amount</th>
-              <th>Bank Amount</th>
-              <th>Difference</th>
-              <th>Error Type</th>
-              <th>Result</th>
-            </tr>
-          </thead>
-          <tbody id="results-table"></tbody>
-        </table>
-        <div class="no-results" id="no-results">Run reconciliation on the Dashboard tab first.</div>
-      </div>
+      </section>
 
-    </div>
-
-    <!-- ══════════════════════════════ -->
-    <!-- TAB 4: HISTORY                 -->
-    <!-- ══════════════════════════════ -->
-    <div id="tab-history" class="tab-content">
-
-      <div class="tab-header">
-        <div class="tab-title">History</div>
-        <div class="tab-subtitle">All past reconciliation runs — click any to reload</div>
-      </div>
-
-      <div class="history-section">
-        <div class="history-header">
-          <span id="history-count" style="font-size:13px;color:#888"></span>
-          <button class="clear-btn" onclick="clearHistory()">Clear All History</button>
+      <section class="how-it-works">
+        <div class="features-label">How It Works</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Upload your records</strong> — drop in your M-Pesa CSV and your core banking CSV. Or use our sample data to try it instantly.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Set your tolerance</strong> — choose a KES threshold for acceptable differences. Zero means strict matching.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Run reconciliation</strong> — the platform compares every transaction in seconds and categorises every result.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Get AI insights</strong> — Claude analyses your results, suggests fixes, and answers your questions in plain English.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-text"><strong>Export and act</strong> — download your report as CSV, share with your team, and resolve issues fast.</div>
+          </div>
         </div>
-        <div id="history-list"></div>
-      </div>
+      </section>
 
+      <section class="cta-section">
+        <div class="cta-box">
+          <div class="cta-title">Ready to reconcile smarter?</div>
+          <div class="cta-sub">Free to use. No sign-up required. Works with any M-Pesa or bank CSV export.</div>
+          <button class="btn-primary" onclick="launchApp()">Launch LT-Reconciliation →</button>
+        </div>
+      </section>
+
+      <footer class="landing-footer">
+        <div class="footer-logo">LT<span>—</span>Reconciliation</div>
+        <div class="footer-links">
+          <span>Built by Ian Kiptoo Katula</span>
+          <span>•</span>
+          <a href="https://github.com/Amiankatula/lt-reconciliation" target="_blank">GitHub</a>
+          <span>•</span>
+          <span>Powered by Claude AI</span>
+        </div>
+      </footer>
     </div>
 
     <!-- ══════════════════════════════ -->
-    <!-- TAB 5: AUDIT TRAIL             -->
+    <!-- MAIN APP                       -->
     <!-- ══════════════════════════════ -->
-    <div id="tab-audit" class="tab-content">
+    <div id="main-app" style="display:none">
 
-      <div class="tab-header">
-        <div class="tab-title">Audit Trail</div>
-        <div class="tab-subtitle">Complete timestamped log of all platform activity</div>
+      <header>
+        <div class="header-left">
+          <button class="back-btn" onclick="showLanding()">← Home</button>
+          <div class="logo">LT<span>—</span>Reconciliation</div>
+          <div class="tagline">Transaction Matching Platform</div>
+        </div>
+        <div class="header-right">
+          <div class="audit-pill" id="audit-pill">No reconciliation run yet</div>
+        </div>
+      </header>
+
+      <nav class="tab-nav">
+        <button class="tab-btn active" onclick="showTab('dashboard')">📊 Dashboard</button>
+        <button class="tab-btn" onclick="showTab('records')">📂 Records</button>
+        <button class="tab-btn" onclick="showTab('results')">🔍 Results</button>
+        <button class="tab-btn" onclick="showTab('history')">🕐 History</button>
+        <button class="tab-btn" onclick="showTab('assistant')">🤖 AI Assistant</button>
+        <button class="tab-btn" onclick="showTab('audit')">📋 Audit Trail</button>
+      </nav>
+
+      <!-- TAB 1: DASHBOARD -->
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="tab-header">
+          <div class="tab-title">Dashboard</div>
+          <div class="tab-subtitle">Upload your records, set tolerance and run reconciliation</div>
+        </div>
+        <div class="settings-bar">
+          <div class="upload-group">
+            <label class="upload-label">
+              📱 Mobile / M-Pesa Records
+              <input type="file" id="mobile-upload" accept=".csv" onchange="handleUpload('mobile', this)" />
+              <span class="upload-hint" id="mobile-hint">Using sample data</span>
+            </label>
+          </div>
+          <div class="upload-group">
+            <label class="upload-label">
+              🏦 Core Banking Records
+              <input type="file" id="bank-upload" accept=".csv" onchange="handleUpload('bank', this)" />
+              <span class="upload-hint" id="bank-hint">Using sample data</span>
+            </label>
+          </div>
+          <div class="tolerance-group">
+            <label class="tolerance-label">
+              Tolerance (KES)
+              <input type="number" id="tolerance" value="0" min="0" />
+            </label>
+            <div class="tolerance-hint">Differences within this amount are treated as matched</div>
+          </div>
+          <button id="reconcile-btn" onclick="runReconciliation()">▶ Run Reconciliation</button>
+        </div>
+        <div class="status-bar"><span id="status-text">Upload CSV files or use sample data — then click Run Reconciliation</span></div>
+        <div class="summary">
+          <div class="summary-card" onclick="showTab('results')" style="cursor:pointer">
+            <div class="card-number" id="total-count">0</div>
+            <div class="card-label">Total Transactions</div>
+          </div>
+          <div class="summary-card matched" onclick="filterAndGo('matched')" style="cursor:pointer">
+            <div class="card-number" id="matched-count">0</div>
+            <div class="card-label">Matched</div>
+          </div>
+          <div class="summary-card tolerance-card" onclick="filterAndGo('tolerance')" style="cursor:pointer">
+            <div class="card-number" id="tolerance-count">0</div>
+            <div class="card-label">Within Tolerance</div>
+          </div>
+          <div class="summary-card mismatch" onclick="filterAndGo('mismatch')" style="cursor:pointer">
+            <div class="card-number" id="mismatch-count">0</div>
+            <div class="card-label">Mismatches</div>
+          </div>
+          <div class="summary-card missing" onclick="filterAndGo('missing')" style="cursor:pointer">
+            <div class="card-number" id="missing-count">0</div>
+            <div class="card-label">Missing</div>
+          </div>
+          <div class="summary-card unreconciled">
+            <div class="card-number" id="unreconciled-amount">KES 0</div>
+            <div class="card-label">Unreconciled Amount</div>
+          </div>
+        </div>
+        <div class="quick-actions">
+          <div class="qa-card" onclick="showTab('records')"><div class="qa-icon">📂</div><div class="qa-label">View Records</div></div>
+          <div class="qa-card" onclick="showTab('results')"><div class="qa-icon">🔍</div><div class="qa-label">View Results</div></div>
+          <div class="qa-card" onclick="exportCSV()"><div class="qa-icon">⬇</div><div class="qa-label">Export CSV</div></div>
+          <div class="qa-card" onclick="showTab('assistant')"><div class="qa-icon">🤖</div><div class="qa-label">AI Assistant</div></div>
+        </div>
+        <div id="ai-dashboard-banner" style="display:none; margin: 16px 32px 0 32px;">
+          <div class="ai-banner">
+            <div class="ai-banner-text">✨ Reconciliation complete — want Claude to analyse your results?</div>
+            <button class="ai-banner-btn" onclick="showTab('assistant')">Open AI Assistant →</button>
+          </div>
+        </div>
       </div>
 
-      <div class="audit-section">
-        <div id="audit-log"></div>
+      <!-- TAB 2: RECORDS -->
+      <div id="tab-records" class="tab-content">
+        <div class="tab-header">
+          <div class="tab-title">Records</div>
+          <div class="tab-subtitle">Raw transaction data from both systems</div>
+        </div>
+        <div class="panels">
+          <div class="panel">
+            <div class="panel-title">📱 Mobile App Records</div>
+            <div class="panel-subtitle">What the M-Pesa system recorded</div>
+            <table><thead><tr><th>Transaction ID</th><th>Amount (KES)</th><th>Date</th><th>Status</th></tr></thead><tbody id="mobile-table"></tbody></table>
+          </div>
+          <div class="panel">
+            <div class="panel-title">🏦 Core Banking Records</div>
+            <div class="panel-subtitle">What the bank's core system recorded</div>
+            <table><thead><tr><th>Transaction ID</th><th>Amount (KES)</th><th>Date</th><th>Status</th></tr></thead><tbody id="bank-table"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: RESULTS -->
+      <div id="tab-results" class="tab-content">
+        <div class="tab-header">
+          <div class="tab-title">Results</div>
+          <div class="tab-subtitle">Reconciliation output — filter and export</div>
+        </div>
+        <div class="results-section">
+          <div id="empty-results">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">No results yet</div>
+            <div class="empty-desc">Go to the Dashboard tab, upload your records and run a reconciliation first.</div>
+            <button class="empty-btn" onclick="showTab('dashboard')">Go to Dashboard →</button>
+          </div>
+          <div id="results-content" style="display:none">
+            <div class="results-header">
+              <div class="filter-buttons">
+                <button class="filter-btn active" id="btn-all"       onclick="filterResults('all')">All</button>
+                <button class="filter-btn matched-btn" id="btn-matched"   onclick="filterResults('matched')">✅ Matched</button>
+                <button class="filter-btn tolerance-btn" id="btn-tolerance" onclick="filterResults('tolerance')">〰 Tolerance</button>
+                <button class="filter-btn mismatch-btn" id="btn-mismatch"  onclick="filterResults('mismatch')">⚠️ Mismatches</button>
+                <button class="filter-btn missing-btn"  id="btn-missing"   onclick="filterResults('missing')">❌ Missing</button>
+                <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+              </div>
+            </div>
+            <div id="filter-status"></div>
+            <div style="overflow-x:auto">
+              <table>
+                <thead><tr><th>Transaction ID</th><th>Mobile Amount</th><th>Bank Amount</th><th>Difference</th><th>Error Type</th><th>Result</th></tr></thead>
+                <tbody id="results-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: HISTORY -->
+      <div id="tab-history" class="tab-content">
+        <div class="tab-header">
+          <div class="tab-title">History</div>
+          <div class="tab-subtitle">All past reconciliation runs — click any to reload</div>
+        </div>
+        <div class="history-section">
+          <div class="history-header">
+            <span id="history-count" style="font-size:13px;color:#888"></span>
+            <button class="clear-btn" onclick="clearHistory()">Clear All History</button>
+          </div>
+          <div id="history-list"></div>
+        </div>
+      </div>
+
+      <!-- TAB 5: AI ASSISTANT -->
+      <div id="tab-assistant" class="tab-content">
+        <div class="tab-header">
+          <div class="tab-title">🤖 AI Assistant</div>
+          <div class="tab-subtitle">Powered by Claude — analyse results, get fix suggestions, ask anything</div>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card-header">
+            <div class="ai-card-title">📊 Reconciliation Analysis</div>
+            <div class="ai-card-sub">Claude reads your results and explains what happened in plain English</div>
+          </div>
+          <button class="ai-run-btn" onclick="runAIAnalysis()">✨ Analyse My Results</button>
+          <div id="ai-analysis-output" class="ai-output" style="display:none"></div>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card-header">
+            <div class="ai-card-title">🔧 Fix Suggestions</div>
+            <div class="ai-card-sub">Claude suggests a specific action for each problematic transaction</div>
+          </div>
+          <button class="ai-run-btn" onclick="runFixSuggestions()">🔧 Suggest Fixes</button>
+          <div id="ai-fixes-output" class="ai-output" style="display:none"></div>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card-header">
+            <div class="ai-card-title">💬 Ask Claude</div>
+            <div class="ai-card-sub">Ask any question about your reconciliation results</div>
+          </div>
+          <div class="ai-chat-box" id="ai-chat-messages">
+            <div class="chat-welcome">
+              <div class="chat-welcome-icon">🤖</div>
+              <div class="chat-welcome-text">Hi! I'm Claude. Run a reconciliation first, then ask me anything about your results — mismatches, patterns, what to investigate, next steps.</div>
+            </div>
+          </div>
+          <div class="ai-chat-input-row">
+            <input type="text" id="ai-chat-input" class="ai-chat-input"
+              placeholder="e.g. Why might TXN002 have a mismatch? What should I do about missing transactions?"
+              onkeydown="if(event.key==='Enter') sendChatMessage()" />
+            <button class="ai-send-btn" onclick="sendChatMessage()">Send →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: AUDIT TRAIL -->
+      <div id="tab-audit" class="tab-content">
+        <div class="tab-header">
+          <div class="tab-title">Audit Trail</div>
+          <div class="tab-subtitle">Complete timestamped log of all platform activity</div>
+        </div>
+        <div class="audit-section">
+          <div id="audit-log"></div>
+        </div>
       </div>
 
     </div>
@@ -233,4 +349,3 @@
     <script src="app.js"></script>
   </body>
 </html>
-
