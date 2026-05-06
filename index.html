@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LT-Reconciliation | Transaction Matching Platform</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <header>
+      <div class="header-left">
+        <div class="logo">LT<span>—</span>Reconciliation</div>
+        <div class="tagline">Transaction Matching Platform</div>
+      </div>
+      <div class="header-right">
+        <div class="audit-pill" id="audit-pill">No reconciliation run yet</div>
+      </div>
+    </header>
+
+    <!-- UPLOAD + SETTINGS BAR -->
+    <div class="settings-bar">
+
+      <div class="upload-group">
+        <label class="upload-label">
+          📱 Mobile / M-Pesa Records
+          <input type="file" id="mobile-upload" accept=".csv" onchange="handleUpload('mobile', this)" />
+          <span class="upload-hint" id="mobile-hint">Using sample data</span>
+        </label>
+      </div>
+
+      <div class="upload-group">
+        <label class="upload-label">
+          🏦 Core Banking Records
+          <input type="file" id="bank-upload" accept=".csv" onchange="handleUpload('bank', this)" />
+          <span class="upload-hint" id="bank-hint">Using sample data</span>
+        </label>
+      </div>
+
+      <div class="tolerance-group">
+        <label class="tolerance-label">
+          Tolerance (KES)
+          <input type="number" id="tolerance" value="0" min="0" placeholder="0" />
+        </label>
+        <div class="tolerance-hint">Differences within this amount are treated as matched</div>
+      </div>
+
+      <button id="reconcile-btn" onclick="runReconciliation()">
+        ▶ Run Reconciliation
+      </button>
+
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <section class="summary">
+      <div class="summary-card">
+        <div class="card-number" id="total-count">0</div>
+        <div class="card-label">Total Transactions</div>
+      </div>
+      <div class="summary-card matched">
+        <div class="card-number" id="matched-count">0</div>
+        <div class="card-label">Matched</div>
+      </div>
+      <div class="summary-card tolerance-card">
+        <div class="card-number" id="tolerance-count">0</div>
+        <div class="card-label">Within Tolerance</div>
+      </div>
+      <div class="summary-card mismatch">
+        <div class="card-number" id="mismatch-count">0</div>
+        <div class="card-label">Mismatches</div>
+      </div>
+      <div class="summary-card missing">
+        <div class="card-number" id="missing-count">0</div>
+        <div class="card-label">Missing</div>
+      </div>
+      <div class="summary-card unreconciled">
+        <div class="card-number" id="unreconciled-amount">KES 0</div>
+        <div class="card-label">Unreconciled Amount</div>
+      </div>
+    </section>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <span id="status-text">Upload CSV files or use sample data — then click Run Reconciliation</span>
+    </div>
+
+    <!-- TWO PANELS -->
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-title">📱 Mobile App Records</div>
+        <div class="panel-subtitle">What the M-Pesa system recorded</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Amount (KES)</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="mobile-table"></tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">🏦 Core Banking Records</div>
+        <div class="panel-subtitle">What the bank's core system recorded</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Amount (KES)</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="bank-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-section">
+      <div class="results-header">
+        <div class="panel-title">🔍 Reconciliation Results</div>
+        <div class="filter-buttons">
+          <button class="filter-btn active" id="btn-all"       onclick="filterResults('all')">All</button>
+          <button class="filter-btn matched-btn" id="btn-matched"   onclick="filterResults('matched')">✅ Matched</button>
+          <button class="filter-btn tolerance-btn" id="btn-tolerance" onclick="filterResults('tolerance')">〰 Tolerance</button>
+          <button class="filter-btn mismatch-btn" id="btn-mismatch"  onclick="filterResults('mismatch')">⚠️ Mismatches</button>
+          <button class="filter-btn missing-btn"  id="btn-missing"   onclick="filterResults('missing')">❌ Missing</button>
+          <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div id="filter-status"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Transaction ID</th>
+            <th>Mobile Amount</th>
+            <th>Bank Amount</th>
+            <th>Difference</th>
+            <th>Error Type</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody id="results-table"></tbody>
+      </table>
+    </div>
+    <!-- HISTORY -->
+    <div class="history-section">
+      <div class="history-header">
+        <div class="panel-title">🕐 Reconciliation History</div>
+        <button class="clear-btn" onclick="clearHistory()">Clear History</button>
+      </div>
+      <div id="history-list"></div>
+    </div>
+
+    <!-- AUDIT TRAIL -->
+    <div class="audit-section">
+      <div class="panel-title">📋 Audit Trail</div>
+      <div id="audit-log"></div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
