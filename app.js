@@ -28,10 +28,30 @@ var sampleBank = [
   { id: "TXN012", amount: 7400,  date: "2026-05-06" },
 ];
 
-// ── STATE ──
 var mobileData = sampleMobile;
 var bankData   = sampleBank;
 var allResults = [];
+
+// ── TAB SWITCHING ──
+function showTab(name) {
+  var contents = document.querySelectorAll(".tab-content");
+  var buttons  = document.querySelectorAll(".tab-btn");
+  for (var i = 0; i < contents.length; i++) contents[i].classList.remove("active");
+  for (var j = 0; j < buttons.length;  j++) buttons[j].classList.remove("active");
+  document.getElementById("tab-" + name).classList.add("active");
+  // Find and activate matching button
+  for (var k = 0; k < buttons.length; k++) {
+    if (buttons[k].getAttribute("onclick") === "showTab('" + name + "')") {
+      buttons[k].classList.add("active");
+    }
+  }
+}
+
+// Click card → go to results filtered
+function filterAndGo(type) {
+  showTab("results");
+  filterResults(type);
+}
 
 // ── INIT ──
 function init() {
@@ -40,6 +60,8 @@ function init() {
   document.getElementById("total-count").textContent = mobileData.length;
   addAudit("Platform loaded — using sample data.", "info");
   renderHistory();
+  // Show empty state on results tab
+  document.getElementById("no-results").style.display = "block";
 }
 
 // ── FILL TABLE ──
@@ -61,7 +83,6 @@ function handleUpload(type, input) {
   if (!input.files || !input.files[0]) return;
   var file   = input.files[0];
   var reader = new FileReader();
-
   reader.onload = function(e) {
     var lines  = e.target.result.trim().split("\n");
     var parsed = [];
@@ -79,12 +100,12 @@ function handleUpload(type, input) {
       mobileData = parsed;
       document.getElementById("mobile-hint").textContent = file.name + " (" + parsed.length + " rows)";
       fillTable("mobile-table", mobileData);
-      addAudit("Mobile CSV uploaded: " + file.name + " — " + parsed.length + " transactions.", "success");
+      addAudit("Mobile CSV: " + file.name + " — " + parsed.length + " transactions loaded.", "success");
     } else {
       bankData = parsed;
       document.getElementById("bank-hint").textContent = file.name + " (" + parsed.length + " rows)";
       fillTable("bank-table", bankData);
-      addAudit("Bank CSV uploaded: " + file.name + " — " + parsed.length + " transactions.", "success");
+      addAudit("Bank CSV: " + file.name + " — " + parsed.length + " transactions loaded.", "success");
     }
     document.getElementById("total-count").textContent = mobileData.length;
   };
@@ -100,9 +121,7 @@ function runReconciliation() {
   addAudit("Reconciliation started. Tolerance: KES " + tolerance + ".", "info");
 
   var bankMap = {};
-  for (var i = 0; i < bankData.length; i++) {
-    bankMap[bankData[i].id] = bankData[i].amount;
-  }
+  for (var i = 0; i < bankData.length; i++) bankMap[bankData[i].id] = bankData[i].amount;
 
   var matched = 0, withinTol = 0, mismatches = 0, missing = 0, unreconciledAmount = 0;
   allResults = [];
@@ -111,7 +130,7 @@ function runReconciliation() {
   document.getElementById("results-table").innerHTML = "";
 
   for (var j = 0; j < mobileData.length; j++) {
-    var rec     = mobileData[j];
+    var rec = mobileData[j];
     var bankAmt = bankMap[rec.id];
     var label, badgeClass, type, diff, errorType;
 
@@ -130,8 +149,8 @@ function runReconciliation() {
         type = "tolerance"; errorType = "Tolerance"; withinTol++;
         unreconciledAmount += diff;
       } else {
-        badgeClass = "badge-mismatch"; type = "mismatch";
-        label = "⚠️ Mismatch"; mismatches++;
+        label = "⚠️ Mismatch"; badgeClass = "badge-mismatch";
+        type = "mismatch"; mismatches++;
         unreconciledAmount += diff;
         errorType = diff < 100 ? "Timing Issue" :
                     (diff === rec.amount || diff === bankAmt) ? "Possible Duplicate" : "Data Gap";
@@ -154,6 +173,7 @@ function runReconciliation() {
 
   fillTable("bank-table", bankData);
 
+  // Update cards
   document.getElementById("total-count").textContent         = mobileData.length;
   document.getElementById("matched-count").textContent       = matched;
   document.getElementById("tolerance-count").textContent     = withinTol;
@@ -163,7 +183,8 @@ function runReconciliation() {
 
   var timeStr = timestamp.toLocaleTimeString();
   var dateStr = timestamp.toLocaleDateString();
-  document.getElementById("status-text").textContent = "Reconciliation complete — " + dateStr + " at " + timeStr;
+
+  document.getElementById("status-text").textContent = "Complete — " + dateStr + " at " + timeStr;
   document.getElementById("audit-pill").textContent  = "Last run: " + dateStr + " " + timeStr;
 
   addAudit(
@@ -174,20 +195,18 @@ function runReconciliation() {
     mismatches > 0 || missing > 0 ? "warning" : "success"
   );
 
-  // ── SAVE TO HISTORY ──
   saveHistory({
-    timestamp:   timestamp.toISOString(),
-    dateStr:     dateStr + " " + timeStr,
-    tolerance:   tolerance,
-    total:       mobileData.length,
-    matched:     matched,
-    withinTol:   withinTol,
-    mismatches:  mismatches,
-    missing:     missing,
+    timestamp: timestamp.toISOString(),
+    dateStr: dateStr + " " + timeStr,
+    tolerance: tolerance,
+    total: mobileData.length,
+    matched: matched, withinTol: withinTol,
+    mismatches: mismatches, missing: missing,
     unreconciled: unreconciledAmount,
-    results:     JSON.parse(JSON.stringify(allResults)),
+    results: JSON.parse(JSON.stringify(allResults)),
   });
 
+  document.getElementById("no-results").style.display = "none";
   renderResults(allResults, "all");
 }
 
@@ -197,22 +216,25 @@ function renderResults(data, type) {
   tbody.innerHTML = "";
 
   for (var i = 0; i < data.length; i++) {
-    var r   = data[i];
+    var r = data[i];
     var row = tbody.insertRow();
     row.insertCell(0).textContent = r.id;
     row.insertCell(1).textContent = "KES " + r.mobileAmount.toLocaleString();
     row.insertCell(2).textContent = r.bankAmount !== undefined ? "KES " + r.bankAmount.toLocaleString() : "—";
 
     var diffCell = row.insertCell(3);
-    if (r.diff === 0)           diffCell.innerHTML = '<span class="diff-zero">—</span>';
-    else if (r.type === "tolerance") diffCell.innerHTML = '<span class="diff-tolerance">KES ' + r.diff.toLocaleString() + '</span>';
-    else                        diffCell.innerHTML = '<span class="diff-positive">KES ' + r.diff.toLocaleString() + '</span>';
+    if (r.diff === 0)
+      diffCell.innerHTML = '<span class="diff-zero">—</span>';
+    else if (r.type === "tolerance")
+      diffCell.innerHTML = '<span class="diff-tolerance">KES ' + r.diff.toLocaleString() + '</span>';
+    else
+      diffCell.innerHTML = '<span class="diff-positive">KES ' + r.diff.toLocaleString() + '</span>';
 
-    var errCell = row.insertCell(4);
     var errClass = r.errorType === "Timing Issue" ? "error-timing" :
                    r.errorType === "Possible Duplicate" ? "error-duplicate" :
                    r.errorType === "Data Gap" ? "error-datagap" :
                    r.errorType === "Tolerance" ? "error-tolerance" : "error-none";
+    var errCell = row.insertCell(4);
     errCell.innerHTML = '<span class="' + errClass + '">' + r.errorType + '</span>';
 
     var resCell = row.insertCell(5);
@@ -221,10 +243,10 @@ function renderResults(data, type) {
 
   var labels = {
     all:       "Showing all " + data.length + " transactions",
-    matched:   "Showing " + data.length + " matched transaction(s)",
-    tolerance: "Showing " + data.length + " within tolerance",
-    mismatch:  "Showing " + data.length + " mismatch(es) — requires investigation",
-    missing:   "Showing " + data.length + " missing transaction(s)"
+    matched:   data.length + " matched transaction(s)",
+    tolerance: data.length + " within tolerance",
+    mismatch:  data.length + " mismatch(es) — requires investigation",
+    missing:   data.length + " missing transaction(s)"
   };
   document.getElementById("filter-status").textContent = labels[type] || "";
 }
@@ -234,7 +256,6 @@ function filterResults(type) {
   var buttons = document.querySelectorAll(".filter-btn");
   for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove("active");
   document.getElementById("btn-" + type).classList.add("active");
-
   var filtered = type === "all" ? allResults : allResults.filter(function(r) { return r.type === type; });
   renderResults(filtered, type);
 }
@@ -252,7 +273,7 @@ function exportCSV() {
   var blob = new Blob([csv], { type: "text/csv" });
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement("a");
-  a.href   = url;
+  a.href = url;
   a.download = "LT-Reconciliation-" + new Date().toISOString().slice(0,10) + ".csv";
   document.body.appendChild(a);
   a.click();
@@ -261,7 +282,7 @@ function exportCSV() {
   addAudit("Report exported to CSV.", "success");
 }
 
-// ── AUDIT TRAIL ──
+// ── AUDIT ──
 function addAudit(message, level) {
   var log   = document.getElementById("audit-log");
   var entry = document.createElement("div");
@@ -272,25 +293,18 @@ function addAudit(message, level) {
   log.insertBefore(entry, log.firstChild);
 }
 
-// ════════════════════════════════════════
-// ── HISTORY SYSTEM ──
-// ════════════════════════════════════════
-
+// ── HISTORY ──
 function saveHistory(run) {
   var history = getHistory();
-  history.unshift(run); // newest first
-  if (history.length > 20) history = history.slice(0, 20); // keep last 20
-  try {
-    localStorage.setItem("lt_recon_history", JSON.stringify(history));
-  } catch(e) {}
+  history.unshift(run);
+  if (history.length > 20) history = history.slice(0, 20);
+  try { localStorage.setItem("lt_recon_history", JSON.stringify(history)); } catch(e) {}
   renderHistory();
 }
 
 function getHistory() {
-  try {
-    var raw = localStorage.getItem("lt_recon_history");
-    return raw ? JSON.parse(raw) : [];
-  } catch(e) { return []; }
+  try { var raw = localStorage.getItem("lt_recon_history"); return raw ? JSON.parse(raw) : []; }
+  catch(e) { return []; }
 }
 
 function clearHistory() {
@@ -304,28 +318,29 @@ function clearHistory() {
 function renderHistory() {
   var container = document.getElementById("history-list");
   var history   = getHistory();
+  var countEl   = document.getElementById("history-count");
 
   if (history.length === 0) {
-    container.innerHTML = '<div class="history-empty">No reconciliation runs yet. Run your first reconciliation above.</div>';
+    container.innerHTML = '<div class="history-empty">No reconciliation runs yet. Go to Dashboard and run your first reconciliation.</div>';
+    if (countEl) countEl.textContent = "";
     return;
   }
 
+  if (countEl) countEl.textContent = history.length + " run(s) saved";
   container.innerHTML = "";
+
   for (var i = 0; i < history.length; i++) {
     var run  = history[i];
     var card = document.createElement("div");
     card.className = "history-card";
-    card.setAttribute("data-index", i);
-
-    var matchRate = run.total > 0 ? Math.round((run.matched / run.total) * 100) : 0;
-    var statusClass = run.mismatches > 0 || run.missing > 0 ? "hist-warn" : "hist-ok";
+    var matchRate   = run.total > 0 ? Math.round((run.matched / run.total) * 100) : 0;
+    var statusClass = run.mismatches + run.missing > 0 ? "hist-warn" : "hist-ok";
+    var statusText  = run.mismatches + run.missing > 0 ? "⚠ Issues Found" : "✅ Clean";
 
     card.innerHTML =
       '<div class="hist-top">' +
         '<div class="hist-date">' + run.dateStr + '</div>' +
-        '<div class="hist-badge ' + statusClass + '">' +
-          (run.mismatches + run.missing > 0 ? "⚠ Issues Found" : "✅ Clean") +
-        '</div>' +
+        '<div class="hist-badge ' + statusClass + '">' + statusText + '</div>' +
       '</div>' +
       '<div class="hist-stats">' +
         '<div class="hist-stat"><span class="hist-num">' + run.total + '</span><span class="hist-lbl">Total</span></div>' +
@@ -345,14 +360,10 @@ function renderHistory() {
 }
 
 function loadHistoryRun(index) {
-  var history = getHistory();
-  var run     = history[index];
+  var run = getHistory()[index];
   if (!run) return;
 
-  // Restore results
   allResults = run.results;
-
-  // Update summary cards
   document.getElementById("total-count").textContent         = run.total;
   document.getElementById("matched-count").textContent       = run.matched;
   document.getElementById("tolerance-count").textContent     = run.withinTol || 0;
@@ -362,16 +373,14 @@ function loadHistoryRun(index) {
   document.getElementById("status-text").textContent         = "Viewing historical run — " + run.dateStr;
   document.getElementById("audit-pill").textContent          = "Viewing: " + run.dateStr;
 
-  // Reset filter buttons
   var buttons = document.querySelectorAll(".filter-btn");
   for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove("active");
   document.getElementById("btn-all").classList.add("active");
 
+  document.getElementById("no-results").style.display = "none";
   renderResults(allResults, "all");
   addAudit("Loaded historical run from " + run.dateStr + ".", "info");
-
-  // Scroll up to results
-  document.querySelector(".results-section").scrollIntoView({ behavior: "smooth" });
+  showTab("results");
 }
 
 // ── START ──
